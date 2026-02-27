@@ -1,10 +1,7 @@
 import boto3
 import botocore
 from botocore.exceptions import ClientError
-import os
-import json
-from datetime import datetime
-from .params import CONFIG, AWS_GLUE_ALL_DATABASES
+from .params import CONFIG
 
 GLUE = boto3.client('glue', config=CONFIG)
 
@@ -17,25 +14,7 @@ class ExtractGlueCatalog:
             databases.extend(page['DatabaseList'])
         return databases
 
-    def get_json_database_names(self, json_folder):
-        if not os.path.exists(AWS_GLUE_ALL_DATABASES):
-            print(f'Erro: A pasta {AWS_GLUE_ALL_DATABASES} não foi encontrada.')
-            return
-
-        database_name = []
-        for json_file in os.listdir(json_folder):
-            if json_file.endswith('.json'):
-                json_path = os.path.join(json_folder, json_file)
-
-                try:
-                    with open(json_path, 'r', encoding='utf-8') as f:
-                        database_name.append(json.load(f).get('Name'))
-                except Exception as e:
-                    print(f'Erro ao ler o arquivo {json_path}: {e}')
-        return database_name
-
-    def query_all_table_cols(self):
-        database_names = self.get_json_database_names(AWS_GLUE_ALL_DATABASES)
+    def query_all_table_cols(self, database_names):
         tables = []
 
         for database_name in database_names:

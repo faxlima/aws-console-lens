@@ -13,3 +13,11 @@ CONFIG = Config(
 # Diretórios de armazenamento de dados
 AWS_GLUE_ALL_DATABASES = 'data/glue_all_databases/'
 AWS_GLUE_ALL_TABLES_COLS = 'data/glue_all_tables_cols/'
+AWS_IAM_ALL_USERS = 'data/iam_all_users/'
+AWS_IAM_ALL_GROUPS = 'data/iam_all_groups/'
+AWS_IAM_USERS_GROUPS = 'data/iam_users_groups/'
+AWS_IAM_POLICIES = 'data/iam_all_policies/'
+AWS_IAM_GROUPS_POLICIES = 'data/iam_groups_policies/'
+AWS_IAM_GROUPS_POLICIES_INLINE = 'data/iam_groups_policies_inline/'
+AWS_IAM_POLICIES_VERSION = 'data/iam_policies_version/'
+AWS_IAM_USERS_POLICIES_INLINE = 'data/iam_users_policies_inline/'
