@@ -8,7 +8,9 @@ from src import (
     ExtractIamPolicies,
     AWS_IAM_ALL_USERS,
     AWS_IAM_ALL_GROUPS,
-    AWS_IAM_USERS_GROUPS
+    AWS_IAM_USERS_GROUPS,
+    AWS_IAM_ALL_POLICIES,
+    AWS_IAM_GROUPS_POLICIES
 )
 
 def save_json_files(list_of_json, json_target_folder, item_type):
@@ -47,6 +49,32 @@ def read_json_files(json_folder, key):
                 return {"error": "Erro ao ler o formato JSON."}
     return values
 
+def read_json_keys(json_folder, keys):
+    if not os.path.exists(json_folder):
+        print(f'Erro: A pasta "{json_folder}" de arquivos JSON não foi encontrada.')
+        return
+
+    list = []
+    for json_file in os.listdir(json_folder):
+        if json_file.endswith('.json'):
+            json_path = os.path.join(json_folder, json_file)
+
+            try:
+                with open(json_path, 'r', encoding='utf-8') as f:
+                    dados = json.load(f)
+
+                    # Captura apenas os campos desejados usando dictionary comprehension
+                    # Se o campo não existir, retorna None por segurança
+                    values = {key: dados.get(key) for key in keys}
+
+                    # Adiciona ao dicionário principal usando o nome do arquivo como chave
+                    list.append(values)
+            except FileNotFoundError:
+                return {"error": "Arquivo não encontrado."}
+            except json.JSONDecodeError:
+                return {"error": "Erro ao ler o formato JSON."}
+    return list
+
 def import_all_glue_databases():
     print("Iniciando a importação de Databases do GLUE.")
     aws = ExtractGlueCatalog()
@@ -78,13 +106,32 @@ def import_all_iam_groups():
     aws = ExtractIamPolicies()
     save_json_files(aws.query_all_iam_groups(), AWS_IAM_ALL_GROUPS, "group")
 
-def import_users_groups():
+def import_iam_users_groups():
     if os.path.exists(AWS_IAM_USERS_GROUPS):
         print(f'A pasta "{AWS_IAM_USERS_GROUPS}" já existe na pasta de dados.')
         return
 
     aws = ExtractIamPolicies()
-    save_json_files(aws.query_iam_user_groups(), AWS_IAM_USERS_GROUPS, "user_group")
+    user_names = read_json_files(AWS_IAM_ALL_USERS, 'UserName')
+    save_json_files(aws.query_iam_user_groups(user_names), AWS_IAM_USERS_GROUPS, "user_group")
+
+def import_iam_all_policies():
+    if os.path.exists(AWS_IAM_ALL_POLICIES):
+        print(f'A pasta "{AWS_IAM_ALL_POLICIES}" já existe na pasta de dados.')
+        return
+
+    aws = ExtractIamPolicies()
+    save_json_files(aws.query_aim_all_policies(), AWS_IAM_ALL_POLICIES, "policy")
+
+def import_iam_groups_policies():
+    if os.path.exists(AWS_IAM_GROUPS_POLICIES):
+        print(f'A pasta "{AWS_IAM_GROUPS_POLICIES}" já existe na pasta de dados.')
+        return
+
+    aws = ExtractIamPolicies()
+    groups_names = read_json_files(AWS_IAM_ALL_GROUPS, 'GroupName')
+    save_json_files(aws.query_iam_groups_policies(groups_names), AWS_IAM_GROUPS_POLICIES, "group_policy")
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -119,11 +166,14 @@ def main():
     if args.iam:
         import_all_iam_users()
         import_all_iam_groups()
-        import_users_groups()
+        import_iam_users_groups()
+        import_iam_all_policies()
+        import_iam_groups_policies()
 
     if args.test:
-        data = read_json_files(AWS_GLUE_ALL_DATABASES, 'Name')
-        print(type(data))
+        #data = read_json_keys(AWS_IAM_ALL_POLICIES, ['Arn', 'DefaultVersionId', 'AttachmentCount'])
+        data = read_json_keys(AWS_IAM_ALL_GROUPS, ['GroupName', 'GroupId', 'CreateDate'])
+        #print(type(data))
         print(data)
 
 # Só permite rodar este script diretamente.

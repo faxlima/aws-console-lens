@@ -1,10 +1,5 @@
 import boto3
-from .params import (
-    CONFIG,
-    AWS_IAM_ALL_USERS,
-    AWS_IAM_ALL_GROUPS,
-    AWS_IAM_POLICIES
-)
+from .params import CONFIG
 
 IAM = boto3.client('iam', config=CONFIG)
 
@@ -28,18 +23,17 @@ class ExtractIamPolicies:
 
         return groups
 
-    def query_iam_user_groups(self):
-        users_names = self.readCSVColumn('UserName', AWS_IAM_ALL_USERS)
+    def query_iam_user_groups(self, user_names):
         groups = []
 
-        for user_name in users_names:
+        for user_name in user_names:
             paginator = IAM.get_paginator('list_groups_for_user')
             for page in paginator.paginate(UserName=user_name):
                 for group in page['Groups']:
                     groups.append({'UserName':user_name, 'GroupId':group['GroupId']})
         return groups
 
-    def queryAllPolicies(self):
+    def query_aim_all_policies(self):
         paginator = IAM.get_paginator('list_policies')
 
         policies = []
@@ -48,18 +42,17 @@ class ExtractIamPolicies:
 
         return policies
 
-    def queryGroupsPolicies(self):
-        group_names = self.readCSVColumn('GroupName', AWS_IAM_ALL_GROUPS)
+    def query_iam_groups_policies(self, groups_names):
         policies=[]
 
-        for group_name in group_names:
+        for group_name in groups_names:
             paginator = IAM.get_paginator('list_attached_group_policies')
             for page in paginator.paginate(GroupName=group_name):
                 for policie in page['AttachedPolicies']:
                     policies.append({'GroupName':group_name, 'PolicyArn':policie['PolicyArn']})
         return policies
 
-    def queryPoliciesVersion(self):
+    def query_iam_policies_version(self, keys_values):
         cols = ['Arn', 'DefaultVersionId', 'AttachmentCount']
         csvFile = pd.read_csv(AWS_IAM_POLICIES, usecols=cols)
         csvFile = csvFile[csvFile['AttachmentCount'] > 0]
