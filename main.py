@@ -10,7 +10,10 @@ from src import (
     AWS_IAM_ALL_GROUPS,
     AWS_IAM_USERS_GROUPS,
     AWS_IAM_ALL_POLICIES,
-    AWS_IAM_GROUPS_POLICIES
+    AWS_IAM_GROUPS_POLICIES,
+    AWS_IAM_POLICIES_VERSION,
+    AWS_IAM_GROUPS_POLICIES_INLINE,
+    AWS_IAM_USERS_POLICIES_INLINE
 )
 
 def save_json_files(list_of_json, json_target_folder, item_type):
@@ -76,7 +79,11 @@ def read_json_keys(json_folder, keys):
     return list
 
 def import_all_glue_databases():
-    print("Iniciando a importação de Databases do GLUE.")
+    if os.path.exists(AWS_GLUE_ALL_DATABASES):
+        print(f'A pasta "{AWS_GLUE_ALL_DATABASES}" já existe na pasta de dados.')
+        return
+
+    print("Iniciando a importação dos esquemas do GLUE.")
     aws = ExtractGlueCatalog()
     save_json_files(aws.query_all_databases(), AWS_GLUE_ALL_DATABASES, "database")
 
@@ -85,7 +92,7 @@ def import_all_glue_table_cols():
         print(f'A pasta "{AWS_GLUE_ALL_TABLES_COLS}" já existe na pasta de dados.')
         return
 
-    print("Iniciando a importação de Tabelas e Colunas do GLUE.")
+    print("Iniciando a importação das tabelas e colunas do GLUE.")
     aws = ExtractGlueCatalog()
     database_names = read_json_files(AWS_GLUE_ALL_DATABASES, 'Name')
     save_json_files(aws.query_all_table_cols(database_names), AWS_GLUE_ALL_TABLES_COLS, "table")
@@ -95,6 +102,7 @@ def import_all_iam_users():
         print(f'A pasta "{AWS_IAM_ALL_USERS}" já existe na pasta de dados.')
         return
 
+    print("Iniciando a importação dos usuários do IAM.")
     aws = ExtractIamPolicies()
     save_json_files(aws.query_all_iam_users(), AWS_IAM_ALL_USERS, "user")
 
@@ -103,6 +111,7 @@ def import_all_iam_groups():
         print(f'A pasta "{AWS_IAM_ALL_GROUPS}" já existe na pasta de dados.')
         return
 
+    print("Iniciando a importação dos grupos usuários do IAM.")
     aws = ExtractIamPolicies()
     save_json_files(aws.query_all_iam_groups(), AWS_IAM_ALL_GROUPS, "group")
 
@@ -111,6 +120,7 @@ def import_iam_users_groups():
         print(f'A pasta "{AWS_IAM_USERS_GROUPS}" já existe na pasta de dados.')
         return
 
+    print("Criando a tabela associativa entre usuários e grupos do IAM.")
     aws = ExtractIamPolicies()
     user_names = read_json_files(AWS_IAM_ALL_USERS, 'UserName')
     save_json_files(aws.query_iam_user_groups(user_names), AWS_IAM_USERS_GROUPS, "user_group")
@@ -120,6 +130,7 @@ def import_iam_all_policies():
         print(f'A pasta "{AWS_IAM_ALL_POLICIES}" já existe na pasta de dados.')
         return
 
+    print("Iniciando a importação das políticas do IAM.")
     aws = ExtractIamPolicies()
     save_json_files(aws.query_aim_all_policies(), AWS_IAM_ALL_POLICIES, "policy")
 
@@ -128,10 +139,49 @@ def import_iam_groups_policies():
         print(f'A pasta "{AWS_IAM_GROUPS_POLICIES}" já existe na pasta de dados.')
         return
 
+    print("Criando a tabela associativa entre grupos e políticas do IAM.")
     aws = ExtractIamPolicies()
     groups_names = read_json_files(AWS_IAM_ALL_GROUPS, 'GroupName')
     save_json_files(aws.query_iam_groups_policies(groups_names), AWS_IAM_GROUPS_POLICIES, "group_policy")
 
+def import_iam_policies_version():
+    if os.path.exists(AWS_IAM_POLICIES_VERSION):
+        print(f'A pasta "{AWS_IAM_POLICIES_VERSION}" já existe na pasta de dados.')
+        return
+
+    print("Iniciando a importação dos documentos de políticas do IAM.")
+    aws = ExtractIamPolicies()
+
+    keys_values = read_json_keys(AWS_IAM_ALL_POLICIES, ['Arn', 'DefaultVersionId', 'AttachmentCount'])
+    # Filtrando: Mantém apenas os dicionários onde AttachmentCount > 0
+    keys_values = [item for item in keys_values if item['AttachmentCount'] > 0]
+
+    data = aws.query_iam_policies_version(keys_values)
+    save_json_files(data, AWS_IAM_POLICIES_VERSION, "policy_version")
+
+def import_group_policies_inline():
+    if os.path.exists(AWS_IAM_GROUPS_POLICIES_INLINE):
+        print(f'A pasta "{AWS_IAM_GROUPS_POLICIES_INLINE}" já existe na pasta de dados.')
+        return
+
+    print("Iniciando a importação das políticas IN LINE dos grupos do IAM.")
+    aws = ExtractIamPolicies()
+    group_names = read_json_files(AWS_IAM_ALL_GROUPS, 'GroupName')
+
+    data = aws.query_group_policies_inline(group_names)
+    save_json_files(data, AWS_IAM_GROUPS_POLICIES_INLINE, "group_policy_inline")
+
+def import_user_policies_inline():
+    if os.path.exists(AWS_IAM_USERS_POLICIES_INLINE):
+        print(f'A pasta "{AWS_IAM_USERS_POLICIES_INLINE}" já existe na pasta de dados.')
+        return
+
+    print("Iniciando a importação das políticas IN LINE dos usuários do IAM.")
+    aws = ExtractIamPolicies()
+    user_names = read_json_files(AWS_IAM_ALL_USERS, 'UserName')
+
+    data = aws.query_user_policies_inline(user_names)
+    save_json_files(data, AWS_IAM_USERS_POLICIES_INLINE, "user_policy_inline")
 
 def main():
     parser = argparse.ArgumentParser(
@@ -169,12 +219,18 @@ def main():
         import_iam_users_groups()
         import_iam_all_policies()
         import_iam_groups_policies()
+        import_iam_policies_version()
+        import_group_policies_inline()
+        import_user_policies_inline()
 
     if args.test:
-        #data = read_json_keys(AWS_IAM_ALL_POLICIES, ['Arn', 'DefaultVersionId', 'AttachmentCount'])
-        data = read_json_keys(AWS_IAM_ALL_GROUPS, ['GroupName', 'GroupId', 'CreateDate'])
+        data = read_json_keys(AWS_IAM_ALL_POLICIES, ['Arn', 'DefaultVersionId', 'AttachmentCount'])
+        # Filtrando: Mantém apenas os dicionários onde AttachmentCount > 0
+        data = [item for item in data if item['AttachmentCount'] == 0]
+
         #print(type(data))
         print(data)
+        #print(len(data))
 
 # Só permite rodar este script diretamente.
 if __name__ == "__main__":

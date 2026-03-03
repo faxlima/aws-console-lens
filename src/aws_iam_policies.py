@@ -53,32 +53,29 @@ class ExtractIamPolicies:
         return policies
 
     def query_iam_policies_version(self, keys_values):
-        cols = ['Arn', 'DefaultVersionId', 'AttachmentCount']
-        csvFile = pd.read_csv(AWS_IAM_POLICIES, usecols=cols)
-        csvFile = csvFile[csvFile['AttachmentCount'] > 0]
         docs = []
 
-        for index, row in csvFile.iterrows():
+        for value in keys_values:
             response = IAM.get_policy_version(
-                PolicyArn=row['Arn'],
-                VersionId=row['DefaultVersionId']
+                PolicyArn=value['Arn'],
+                VersionId=value['DefaultVersionId']
             )
 
             docs.append({
-                'PolicyArn': row['Arn'],
-                'DefaultVersionId': row['DefaultVersionId'],
+                'PolicyArn': value['Arn'],
+                'DefaultVersionId': value['DefaultVersionId'],
                 'PolicyDocument': response['PolicyVersion']['Document']
             })
 
         return docs
 
-    def queryGroupPoliciesInLine(self):
-        group_names = self.readCSVColumn('GroupName', AWS_IAM_ALL_GROUPS)
+    def query_group_policies_inline(self, group_names):
         policies=[]
         docs=[]
 
         for group_name in group_names:
             paginator = IAM.get_paginator('list_group_policies')
+
             for page in paginator.paginate(GroupName=group_name):
                 if(len(page['PolicyNames'])>0):
                     policies.append({'GroupName':group_name, 'PolicyNames':page['PolicyNames']})
@@ -95,8 +92,7 @@ class ExtractIamPolicies:
 
         return docs
 
-    def queryUserPoliciesInLine(self):
-        user_names = self.readCSVColumn('UserName', AWS_IAM_ALL_USERS)
+    def query_user_policies_inline(self, user_names):
         policies=[]
         docs=[]
 

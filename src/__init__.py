@@ -9,13 +9,16 @@ from .params import (
     AWS_IAM_ALL_GROUPS,
     AWS_IAM_USERS_GROUPS,
     AWS_IAM_ALL_POLICIES,
-    AWS_IAM_GROUPS_POLICIES
+    AWS_IAM_GROUPS_POLICIES,
+    AWS_IAM_POLICIES_VERSION,
+    AWS_IAM_GROUPS_POLICIES_INLINE,
+    AWS_IAM_USERS_POLICIES_INLINE
 )
 
 """
 aws-console-lens: Ferramenta de auditoria e visibilidade AWS.
 """
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 __author__ = "Francisco Alex Xavier de Lima"
 __email__ = "alex.xavier.lima@gmail.com"
