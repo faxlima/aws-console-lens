@@ -239,11 +239,12 @@ def import_clusters():
         print(f"Importando para initial_date: {initial_date}; final_date: {final_date}.")
 
         data = aws.query_clusters_and_steps(initial_date, final_date)
-        file_name = f'[{index}]cluster.json'
-        save_json_file(data[0], AWS_EMR_CLUSTERS, file_name)
+        if len(data[0]) > 0:
+            file_name = f'[{index}]cluster.json'
+            save_json_file(data[0], AWS_EMR_CLUSTERS, file_name)
 
-        step_file_name = f'[{index}]step.json'
-        save_json_file(data[1], AWS_EMR_STEPS, step_file_name)
+            step_file_name = f'[{index}]step.json'
+            save_json_file(data[1], AWS_EMR_STEPS, step_file_name)
 
 def main():
     parser = argparse.ArgumentParser(

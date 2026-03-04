@@ -31,12 +31,12 @@ class ExtractEmrClustersMetrics:
             CreatedAfter = initial_date,
             CreatedBefore = final_date
         )
-        
 
         clusters = []
         steps = None
         for page in cluster_iterator:
             clusters.extend(page["Clusters"])
 
-        steps = self.query_steps(clusters)
+        if len(clusters) > 0:
+            steps = self.query_steps(clusters)
         return clusters, steps
