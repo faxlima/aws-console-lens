@@ -16,13 +16,14 @@ from .params import (
     AWS_IAM_USERS_POLICIES_INLINE,
     AWS_EMR_CLUSTERS,
     AWS_EMR_STEPS,
-    AWS_EMR_CLUSTERS_CREATED_AFTER
+    AWS_EMR_CLUSTERS_CREATED_AFTER,
+    AWS_EMR_CLUSTERS_QTD_DIAS_CONSULTA
 )
 
 """
 aws-console-lens: Ferramenta de auditoria e visibilidade AWS.
 """
 
-__version__ = "0.1.3"
+__version__ = "0.1.4"
 __author__ = "Francisco Alex Xavier de Lima"
 __email__ = "alex.xavier.lima@gmail.com"

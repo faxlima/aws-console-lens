@@ -1,9 +1,7 @@
 import boto3
 from .params import (
     REGION_NAME,
-    CONFIG,
-    AWS_EMR_CLUSTERS_STATES,
-    AWS_EMR_CLUSTERS_CREATED_AFTER
+    CONFIG
 )
 
 EMR = boto3.client("emr", region_name=REGION_NAME, config=CONFIG)
@@ -33,6 +31,7 @@ class ExtractEmrClustersMetrics:
             CreatedAfter = initial_date,
             CreatedBefore = final_date
         )
+        
 
         clusters = []
         steps = None

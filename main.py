@@ -18,7 +18,8 @@ from src import (
     ExtractEmrClustersMetrics,
     AWS_EMR_CLUSTERS,
     AWS_EMR_STEPS,
-    AWS_EMR_CLUSTERS_CREATED_AFTER
+    AWS_EMR_CLUSTERS_CREATED_AFTER,
+    AWS_EMR_CLUSTERS_QTD_DIAS_CONSULTA
 )
 
 def save_json_file(json_data, json_target_folder,json_file):
@@ -217,9 +218,8 @@ def import_clusters():
         print(f"A data inicial de consulta é inválida: {initial_day}.Precisa ser anterior ou igual a hoje.")
         return
 
-    qtdDiasPermitido = 60
-    if (final_day - initial_day).days > qtdDiasPermitido:
-        print(f"A quantidade máxima de dias por consulta é de {qtdDiasPermitido} dias.")
+    if (final_day - initial_day).days > AWS_EMR_CLUSTERS_QTD_DIAS_CONSULTA:
+        print(f"A quantidade máxima de dias por consulta é de {AWS_EMR_CLUSTERS_QTD_DIAS_CONSULTA} dias.")
         return
 
     # Define o fuso horário de Brasília (UTC-3)
@@ -299,7 +299,6 @@ def main():
         parser.print_help()
         return
 
-    print(args)
     print('Operação Concluída.')
 
 # Só permite rodar este script diretamente.
