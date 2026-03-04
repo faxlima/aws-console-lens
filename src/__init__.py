@@ -1,5 +1,6 @@
 from .aws_glue_datacatalog import ExtractGlueCatalog
 from .aws_iam_policies import ExtractIamPolicies
+from .aws_emr_clusters import ExtractEmrClustersMetrics
 from .params import (
     CONFIG,
     REGION_NAME,
@@ -12,13 +13,16 @@ from .params import (
     AWS_IAM_GROUPS_POLICIES,
     AWS_IAM_POLICIES_VERSION,
     AWS_IAM_GROUPS_POLICIES_INLINE,
-    AWS_IAM_USERS_POLICIES_INLINE
+    AWS_IAM_USERS_POLICIES_INLINE,
+    AWS_EMR_CLUSTERS,
+    AWS_EMR_STEPS,
+    AWS_EMR_CLUSTERS_CREATED_AFTER
 )
 
 """
 aws-console-lens: Ferramenta de auditoria e visibilidade AWS.
 """
 
-__version__ = "0.1.2"
+__version__ = "0.1.3"
 __author__ = "Francisco Alex Xavier de Lima"
 __email__ = "alex.xavier.lima@gmail.com"

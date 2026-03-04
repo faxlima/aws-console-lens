@@ -1,6 +1,7 @@
 import argparse
 import os
 import json
+from datetime import date, datetime, timedelta, time, timezone
 from src import (
     ExtractGlueCatalog,
     AWS_GLUE_ALL_DATABASES,
@@ -13,8 +14,20 @@ from src import (
     AWS_IAM_GROUPS_POLICIES,
     AWS_IAM_POLICIES_VERSION,
     AWS_IAM_GROUPS_POLICIES_INLINE,
-    AWS_IAM_USERS_POLICIES_INLINE
+    AWS_IAM_USERS_POLICIES_INLINE,
+    ExtractEmrClustersMetrics,
+    AWS_EMR_CLUSTERS,
+    AWS_EMR_STEPS,
+    AWS_EMR_CLUSTERS_CREATED_AFTER
 )
+
+def save_json_file(json_data, json_target_folder,json_file):
+    if not os.path.exists(json_target_folder):
+        os.makedirs(json_target_folder)
+
+    file_path = os.path.join(json_target_folder, json_file)
+    with open(file_path, "w", encoding="utf-8") as f:
+            json.dump(json_data, f, ensure_ascii=False, indent=4, default=custom_serializer)
 
 def save_json_files(list_of_json, json_target_folder, item_type):
     if not os.path.exists(json_target_folder):
@@ -30,7 +43,7 @@ def save_json_files(list_of_json, json_target_folder, item_type):
                 f,
                 ensure_ascii=False,
                 indent=4,
-                default=str
+                default=custom_serializer
             )
 
 def read_json_files(json_folder, key):
@@ -51,6 +64,16 @@ def read_json_files(json_folder, key):
             except json.JSONDecodeError:
                 return {"error": "Erro ao ler o formato JSON."}
     return values
+
+def custom_serializer(obj):
+    # Converte para formato ISO 8601 (YYYY-MM-DDTHH:MM:SS)
+    if isinstance(obj, datetime):
+        return obj.isoformat()
+    raise TypeError(f'Type {type(obj)} not serializable')
+
+def print_message_with_time(message):
+    # Função para imprimir mensagem com data e hora
+    print(datetime.now().strftime("[%d/%m/%Y %H:%M:%S.%f]") + ' ' + message)
 
 def read_json_keys(json_folder, keys):
     if not os.path.exists(json_folder):
@@ -183,6 +206,45 @@ def import_user_policies_inline():
     data = aws.query_user_policies_inline(user_names)
     save_json_files(data, AWS_IAM_USERS_POLICIES_INLINE, "user_policy_inline")
 
+def import_clusters():
+    print("Iniciando a importação das métricas dos clusters do EMR.")
+    # Gerando as datas a partir do dado parametrizado.
+    initial_day = AWS_EMR_CLUSTERS_CREATED_AFTER
+    final_day = date.today()
+    delta = timedelta(days=1)
+
+    if initial_day > final_day:
+        print(f"A data inicial de consulta é inválida: {initial_day}.Precisa ser anterior ou igual a hoje.")
+        return
+
+    qtdDiasPermitido = 60
+    if (final_day - initial_day).days > qtdDiasPermitido:
+        print(f"A quantidade máxima de dias por consulta é de {qtdDiasPermitido} dias.")
+        return
+
+    # Define o fuso horário de Brasília (UTC-3)
+    fuso_brasilia = timezone(timedelta(hours=-3))
+    days = []
+    while (initial_day <= final_day):
+        days.append(initial_day)
+        initial_day += delta
+
+    aws = ExtractEmrClustersMetrics()
+
+    for day in days:
+        initial_date = datetime.combine(day, time(0, 0, 0), fuso_brasilia)
+        final_date = datetime.combine(day, time(23, 59, 59), fuso_brasilia)
+        index = day.strftime("%Y%m%d")
+
+        print(f"Importando para initial_date: {initial_date}; final_date: {final_date}.")
+
+        data = aws.query_clusters_and_steps(initial_date, final_date)
+        file_name = f'[{index}]cluster.json'
+        save_json_file(data[0], AWS_EMR_CLUSTERS, file_name)
+
+        step_file_name = f'[{index}]step.json'
+        save_json_file(data[1], AWS_EMR_STEPS, step_file_name)
+
 def main():
     parser = argparse.ArgumentParser(
         description="aws-console-lens: Uma lente sobre seus recursos AWS."
@@ -201,19 +263,24 @@ def main():
     )
 
     parser.add_argument(
+        "--emr",
+        action="store_true",
+        help="Importa os dados de clusters e jobs do EMR, dado uma data da criação do cluster."
+    )
+
+    parser.add_argument(
         "--test",
         action="store_true",
         help="Testando novas funcionalidades"
     )
 
     # Analisa os argumentos vindo do terminal.
-    args = parser.parse_args()
+    args, unknown = parser.parse_known_args()
 
     if args.glue:
         import_all_glue_databases()
         import_all_glue_table_cols()
-
-    if args.iam:
+    elif args.iam:
         import_all_iam_users()
         import_all_iam_groups()
         import_iam_users_groups()
@@ -222,17 +289,19 @@ def main():
         import_iam_policies_version()
         import_group_policies_inline()
         import_user_policies_inline()
+    elif args.emr:
+        import_clusters()
+    elif unknown:
+        print(f"Argumento desconhecido {unknown}.")
+        parser.print_help()
+        return
+    else:
+        parser.print_help()
+        return
 
-    if args.test:
-        data = read_json_keys(AWS_IAM_ALL_POLICIES, ['Arn', 'DefaultVersionId', 'AttachmentCount'])
-        # Filtrando: Mantém apenas os dicionários onde AttachmentCount > 0
-        data = [item for item in data if item['AttachmentCount'] == 0]
-
-        #print(type(data))
-        print(data)
-        #print(len(data))
+    print(args)
+    print('Operação Concluída.')
 
 # Só permite rodar este script diretamente.
 if __name__ == "__main__":
     main()
-    print('Operação Concluída.')
