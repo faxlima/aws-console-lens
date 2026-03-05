@@ -19,7 +19,9 @@ from src import (
     AWS_EMR_CLUSTERS,
     AWS_EMR_STEPS,
     AWS_EMR_CLUSTERS_CREATED_AFTER,
-    AWS_EMR_CLUSTERS_QTD_DIAS_CONSULTA
+    AWS_EMR_CLUSTERS_QTD_DIAS_CONSULTA,
+    ExtractAthenaLogs,
+    AWS_EMR_ATHENA_LOGS
 )
 
 def save_json_file(json_data, json_target_folder,json_file):
@@ -207,7 +209,7 @@ def import_user_policies_inline():
     data = aws.query_user_policies_inline(user_names)
     save_json_files(data, AWS_IAM_USERS_POLICIES_INLINE, "user_policy_inline")
 
-def import_clusters():
+def import_emr_clusters():
     print("Iniciando a importação das métricas dos clusters do EMR.")
     # Gerando as datas a partir do dado parametrizado.
     initial_day = AWS_EMR_CLUSTERS_CREATED_AFTER
@@ -246,6 +248,15 @@ def import_clusters():
             step_file_name = f'[{index}]step.json'
             save_json_file(data[1], AWS_EMR_STEPS, step_file_name)
 
+def import_athena_logs():
+    print("Iniciando a importação dos logs da Athena.")
+    index = date.today().strftime("%Y%m%d")
+    aws = ExtractAthenaLogs()
+
+    initial_date = datetime.now(timezone.utc) - timedelta(hours=36)
+    data = aws.query_athena_all_logs(initial_date)
+    save_json_file(data, AWS_EMR_ATHENA_LOGS, f"[{index}]athena_logs.json")
+
 def main():
     parser = argparse.ArgumentParser(
         description="aws-console-lens: Uma lente sobre seus recursos AWS."
@@ -270,6 +281,12 @@ def main():
     )
 
     parser.add_argument(
+        "--athena",
+        action='store_true',
+        help="Importa os logs de execução de querys do Athena."
+    )
+
+    parser.add_argument(
         "--test",
         action="store_true",
         help="Testando novas funcionalidades"
@@ -291,7 +308,9 @@ def main():
         import_group_policies_inline()
         import_user_policies_inline()
     elif args.emr:
-        import_clusters()
+        import_emr_clusters()
+    elif args.athena:
+        import_athena_logs()
     elif unknown:
         print(f"Argumento desconhecido {unknown}.")
         parser.print_help()

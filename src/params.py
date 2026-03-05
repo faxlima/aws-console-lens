@@ -28,3 +28,5 @@ AWS_EMR_CLUSTERS_CREATED_AFTER = date(2026,3,1)
 AWS_EMR_CLUSTERS_QTD_DIAS_CONSULTA = 60
 AWS_EMR_CLUSTERS = 'data/emr_clusters/'
 AWS_EMR_STEPS = 'data/emr_steps/'
+
+AWS_EMR_ATHENA_LOGS = 'data/athena_logs/'
