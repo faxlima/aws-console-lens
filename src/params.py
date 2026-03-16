@@ -30,3 +30,6 @@ AWS_EMR_CLUSTERS = 'data/emr_clusters/'
 AWS_EMR_STEPS = 'data/emr_steps/'
 
 AWS_EMR_ATHENA_LOGS = 'data/athena_logs/'
+
+AWS_CLOUDTRAIL_HISTORY_QTD_CONSULTA = 500
+AWS_CLOUDTRAIL_HISTORY = 'data/cloudtrail_history/'

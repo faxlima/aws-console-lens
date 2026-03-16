@@ -21,7 +21,9 @@ from src import (
     AWS_EMR_CLUSTERS_CREATED_AFTER,
     AWS_EMR_CLUSTERS_QTD_DIAS_CONSULTA,
     ExtractAthenaLogs,
-    AWS_EMR_ATHENA_LOGS
+    AWS_EMR_ATHENA_LOGS,
+    ExtractCloudTrailEventHistory,
+    AWS_CLOUDTRAIL_HISTORY
 )
 
 def save_json_file(json_data, json_target_folder,json_file):
@@ -257,6 +259,13 @@ def import_athena_logs():
     data = aws.query_athena_all_logs(initial_date)
     save_json_file(data, AWS_EMR_ATHENA_LOGS, f"[{index}]athena_logs.json")
 
+def import_cloudtrail_event_history():
+    print("Iniciando a importação dos eventos históricos do Cloudtrail.")
+    aws = ExtractCloudTrailEventHistory()
+
+    data = aws.query_cloudtrail_event_history()
+    save_json_files(data, AWS_CLOUDTRAIL_HISTORY, "events")
+
 def main():
     parser = argparse.ArgumentParser(
         description="aws-console-lens: Uma lente sobre seus recursos AWS."
@@ -289,7 +298,13 @@ def main():
     parser.add_argument(
         "--test",
         action="store_true",
-        help="Testando novas funcionalidades"
+        help="Testando novas funcionalidades."
+    )
+
+    parser.add_argument(
+        "--cloudtrail",
+        action="store_true",
+        help="Importando os eventos históricos do Cloudtrail."
     )
 
     # Analisa os argumentos vindo do terminal.
@@ -311,6 +326,8 @@ def main():
         import_emr_clusters()
     elif args.athena:
         import_athena_logs()
+    elif args.cloudtrail:
+        import_cloudtrail_event_history()
     elif unknown:
         print(f"Argumento desconhecido {unknown}.")
         parser.print_help()
