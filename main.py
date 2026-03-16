@@ -32,7 +32,7 @@ def save_json_file(json_data, json_target_folder,json_file):
 
     file_path = os.path.join(json_target_folder, json_file)
     with open(file_path, "w", encoding="utf-8") as f:
-            json.dump(json_data, f, ensure_ascii=False, indent=4, default=custom_serializer)
+        json.dump(json_data, f, ensure_ascii=False, indent=4, default=custom_serializer)
 
 def save_json_files(list_of_json, json_target_folder, item_type):
     if not os.path.exists(json_target_folder):
@@ -264,7 +264,14 @@ def import_cloudtrail_event_history():
     aws = ExtractCloudTrailEventHistory()
 
     data = aws.query_cloudtrail_event_history()
-    save_json_files(data, AWS_CLOUDTRAIL_HISTORY, "events")
+    #save_json_files(data, AWS_CLOUDTRAIL_HISTORY, "events")
+    #index = data['eventID']
+    #save_json_file(data, AWS_CLOUDTRAIL_HISTORY, f"[{index}]athena_logs.json")
+    for item in data:
+        index = item['eventID']
+        save_json_file(item, AWS_CLOUDTRAIL_HISTORY, f"{index}_cloudtrail.json")
+
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -304,7 +311,7 @@ def main():
     parser.add_argument(
         "--cloudtrail",
         action="store_true",
-        help="Importando os eventos históricos do Cloudtrail."
+        help="Importando os históricos de eventos do Cloudtrail."
     )
 
     # Analisa os argumentos vindo do terminal.

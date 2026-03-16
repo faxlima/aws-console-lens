@@ -22,5 +22,5 @@ class ExtractCloudTrailEventHistory:
                     events.append(json.loads(event['CloudTrailEvent']))
                 except (KeyError, json.JSONDecodeError):
                     continue
-        
+
         return events
