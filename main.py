@@ -255,7 +255,7 @@ def import_athena_logs():
     index = date.today().strftime("%Y%m%d")
     aws = ExtractAthenaLogs()
 
-    initial_date = datetime.now(timezone.utc) - timedelta(hours=36)
+    initial_date = datetime.now(timezone.utc) - timedelta(hours=48)
     data = aws.query_athena_all_logs(initial_date)
     save_json_file(data, AWS_EMR_ATHENA_LOGS, f"[{index}]athena_logs.json")
 

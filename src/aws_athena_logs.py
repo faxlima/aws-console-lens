@@ -27,36 +27,60 @@ class ExtractAthenaLogs:
     
     def query_athena_all_logs(self, initial_date: datetime):
         all_logs = []
-        paginator = ATHENA.get_paginator("list_query_executions")
-
+        
+        # Garante que initial_date tenha timezone para comparação
         if initial_date.tzinfo is None:
             initial_date = initial_date.replace(tzinfo=timezone.utc)
+        
+        # 1. Buscar todos os workgroups disponíveis
+        try:
+            workgroups_resp = ATHENA.list_work_groups()
+            workgroup_names = [wg['Name'] for wg in workgroups_resp.get('WorkGroups', [])]
+        except Exception as e:
+            print(f"Erro ao listar workgroups: {e}")
+            return []
+        print(f"Workgroups encontrados: {workgroup_names}")
 
-        i=0
-        qtd_reg=0
-        for page in paginator.paginate():
-            query_exec_ids = page.get('QueryExecutionIds', [])
+        # 2. Iterar sobre cada Workgroup
+        for wg in workgroup_names:
+            print(f"\n Iniciando coleta no Workgroup: {wg}")
+            
+            # O paginator precisa do WorkGroup fixo para cada iteração
+            paginator = ATHENA.get_paginator("list_query_executions")
 
-            if not query_exec_ids:
-                # Vai para a próxima página se houver, em vez de parar tudo
-                continue
+            i=0
+            qtd_reg_wg=0
+            
+            # Pagina as queries especificamente DESTE workgroup
+            for page in paginator.paginate(WorkGroup=wg):
+                query_exec_ids = page.get('QueryExecutionIds', [])
+            
 
-            # A API batch_get_query_execution processa até 50 IDs por vez
-            response = ATHENA.batch_get_query_execution(QueryExecutionIds=query_exec_ids)            
-            logs = response.get('QueryExecutions', [])
+                if not query_exec_ids:
+                    # Vai para a próxima página se houver, em vez de parar tudo
+                    continue
 
-            for log in logs:
-                data_log = log['Status']['SubmissionDateTime']
+                # A API batch_get_query_execution processa até 50 IDs por vez
+                response = ATHENA.batch_get_query_execution(QueryExecutionIds=query_exec_ids)            
+                logs = response.get('QueryExecutions', [])
+
+                stop_current_wg = False
+                for log in logs:
+                    data_log = log['Status']['SubmissionDateTime']
                 
-                # Verificação Incremental:
-                # Se o log atual for mais antigo que a data_inicio, 
-                # paramos tudo, pois os próximos serão ainda mais antigos.
-                if data_log < initial_date:
-                    print(f"Alcançada data de corte: {data_log}. Finalizando...")
-                    return all_logs
-                all_logs.append(log)
+                    # Se o log atual for mais antigo que a data_inicio, 
+                    # paramos tudo, pois os próximos serão ainda mais antigos.
+                    if data_log < initial_date:
+                        print(f"[{wg}] Alcançada data de corte: {data_log}. Finalizando...")
+                        stop_current_wg = True
+                        break                    
+                    
+                    all_logs.append(log)
+                if stop_current_wg:
+                    break
 
-            qtd_reg += len(logs)
-            i+=1
-            print(f'Página {i}. Coletados {qtd_reg} registros.')
+                qtd_reg_wg += len(logs)
+                i+=1
+                print(f'[{wg}] Página {i}. Coletados {qtd_reg_wg} registros.')
+        print(f"\nTotal final de logs coletados em todos os grupos: {len(all_logs)}")
         return all_logs
