@@ -5,11 +5,18 @@ from .params import CONFIG, AWS_CLOUDTRAIL_HISTORY_QTD_CONSULTA
 TRAIL = boto3.client('cloudtrail', config=CONFIG)
 
 class ExtractCloudTrailEventHistory:
-    def query_cloudtrail_event_history(self, max_items=50):
+    def query_cloudtrail_event_history(self, event_source):
         events = []
         paginator = TRAIL.get_paginator('lookup_events')
 
         page_iterator = paginator.paginate(
+            # Configuração do filtro para Athena
+            LookupAttributes=[
+                {
+                    'AttributeKey': 'EventSource',
+                    'AttributeValue': event_source
+                },
+            ],
             PaginationConfig={
                 'PageSize': 50, # Máximo permitido por página.
                 'MaxItems': AWS_CLOUDTRAIL_HISTORY_QTD_CONSULTA # Opcional: limite total de itens para não baixar o histórico inteiro

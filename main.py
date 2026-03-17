@@ -259,14 +259,11 @@ def import_athena_logs():
     data = aws.query_athena_all_logs(initial_date)
     save_json_file(data, AWS_EMR_ATHENA_LOGS, f"[{index}]athena_logs.json")
 
-def import_cloudtrail_event_history():
+def import_cloudtrail_athena_event_history():
     print("Iniciando a importação dos eventos históricos do Cloudtrail.")
     aws = ExtractCloudTrailEventHistory()
 
-    data = aws.query_cloudtrail_event_history()
-    #save_json_files(data, AWS_CLOUDTRAIL_HISTORY, "events")
-    #index = data['eventID']
-    #save_json_file(data, AWS_CLOUDTRAIL_HISTORY, f"[{index}]athena_logs.json")
+    data = aws.query_cloudtrail_event_history('athena.amazonaws.com')
     for item in data:
         index = item['eventID']
         save_json_file(item, AWS_CLOUDTRAIL_HISTORY, f"{index}_cloudtrail.json")
@@ -334,7 +331,7 @@ def main():
     elif args.athena:
         import_athena_logs()
     elif args.cloudtrail:
-        import_cloudtrail_event_history()
+        import_cloudtrail_athena_event_history()
     elif unknown:
         print(f"Argumento desconhecido {unknown}.")
         parser.print_help()
