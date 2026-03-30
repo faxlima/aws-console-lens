@@ -5,7 +5,7 @@ from .params import CONFIG, AWS_CLOUDTRAIL_HISTORY_QTD_CONSULTA
 TRAIL = boto3.client('cloudtrail', config=CONFIG)
 
 class ExtractCloudTrailEventHistory:
-    def query_cloudtrail_event_history(self, event_source):
+    def query_cloudtrail_event_history(self):
         events = []
         paginator = TRAIL.get_paginator('lookup_events')
 
@@ -13,8 +13,8 @@ class ExtractCloudTrailEventHistory:
             # Configuração do filtro para Athena
             LookupAttributes=[
                 {
-                    'AttributeKey': 'EventSource',
-                    'AttributeValue': event_source
+                    'AttributeKey': 'EventName',
+                    'AttributeValue': 'StartQueryExecution'
                 },
             ],
             PaginationConfig={
