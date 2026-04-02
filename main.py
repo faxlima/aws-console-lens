@@ -253,12 +253,14 @@ def import_emr_clusters():
 
 def import_athena_logs():
     print("Iniciando a importação dos logs da Athena.")
-    index = date.today().strftime("%Y%m%d")
     aws = ExtractAthenaLogs()
 
     initial_date = datetime.now(timezone.utc) - timedelta(hours=AWS_ATHENA_QTD_HORAS)
     data = aws.query_athena_all_logs(initial_date)
-    save_json_file(data, AWS_ATHENA_LOGS, f"[{index}]athena_logs.json")
+    for item in data:
+        index = item['QueryExecutionId']
+        save_json_file(item, AWS_ATHENA_LOGS, f"{index}_athena_logs.json")
+    print("Importação dos logs da Athena concluída.")
 
 def import_cloudtrail_athena_event_history():
     print("Iniciando a importação dos eventos históricos do Cloudtrail.")
@@ -268,6 +270,7 @@ def import_cloudtrail_athena_event_history():
     for item in data:
         index = item['eventID']
         save_json_file(item, AWS_CLOUDTRAIL_HISTORY, f"{index}_cloudtrail.json")
+    print("Importação dos eventos históricos do Cloudtrail concluída.")
 
 
 
