@@ -29,7 +29,8 @@ AWS_EMR_CLUSTERS_QTD_DIAS_CONSULTA = 60
 AWS_EMR_CLUSTERS = 'data/emr_clusters/'
 AWS_EMR_STEPS = 'data/emr_steps/'
 
-AWS_EMR_ATHENA_LOGS = 'data/athena_logs/'
+AWS_ATHENA_LOGS = 'data/athena_logs/'
+AWS_ATHENA_QTD_HORAS = 48
 
 AWS_CLOUDTRAIL_HISTORY_QTD_CONSULTA = 5000
 AWS_CLOUDTRAIL_HISTORY = 'data/cloudtrail_history/'

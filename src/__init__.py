@@ -20,15 +20,16 @@ from .params import (
     AWS_EMR_STEPS,
     AWS_EMR_CLUSTERS_CREATED_AFTER,
     AWS_EMR_CLUSTERS_QTD_DIAS_CONSULTA,
-    AWS_EMR_ATHENA_LOGS,
+    AWS_ATHENA_LOGS,
     AWS_CLOUDTRAIL_HISTORY,
-    AWS_CLOUDTRAIL_HISTORY_QTD_CONSULTA
+    AWS_CLOUDTRAIL_HISTORY_QTD_CONSULTA,
+    AWS_ATHENA_QTD_HORAS
 )
 
 """
 aws-console-lens: Ferramenta de auditoria e visibilidade AWS.
 """
 
-__version__ = "0.1.13"
+__version__ = "0.1.14"
 __author__ = "Francisco Alex Xavier de Lima"
 __email__ = "alex.xavier.lima@gmail.com"

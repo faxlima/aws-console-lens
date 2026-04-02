@@ -53,8 +53,7 @@ class ExtractAthenaLogs:
             
             # Pagina as queries especificamente DESTE workgroup
             for page in paginator.paginate(WorkGroup=wg):
-                query_exec_ids = page.get('QueryExecutionIds', [])
-            
+                query_exec_ids = page.get('QueryExecutionIds', [])            
 
                 if not query_exec_ids:
                     # Vai para a próxima página se houver, em vez de parar tudo

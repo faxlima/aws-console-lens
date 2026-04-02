@@ -21,9 +21,10 @@ from src import (
     AWS_EMR_CLUSTERS_CREATED_AFTER,
     AWS_EMR_CLUSTERS_QTD_DIAS_CONSULTA,
     ExtractAthenaLogs,
-    AWS_EMR_ATHENA_LOGS,
+    AWS_ATHENA_LOGS,
     ExtractCloudTrailEventHistory,
-    AWS_CLOUDTRAIL_HISTORY
+    AWS_CLOUDTRAIL_HISTORY,
+    AWS_ATHENA_QTD_HORAS
 )
 
 def save_json_file(json_data, json_target_folder,json_file):
@@ -255,9 +256,9 @@ def import_athena_logs():
     index = date.today().strftime("%Y%m%d")
     aws = ExtractAthenaLogs()
 
-    initial_date = datetime.now(timezone.utc) - timedelta(hours=48)
+    initial_date = datetime.now(timezone.utc) - timedelta(hours=AWS_ATHENA_QTD_HORAS)
     data = aws.query_athena_all_logs(initial_date)
-    save_json_file(data, AWS_EMR_ATHENA_LOGS, f"[{index}]athena_logs.json")
+    save_json_file(data, AWS_ATHENA_LOGS, f"[{index}]athena_logs.json")
 
 def import_cloudtrail_athena_event_history():
     print("Iniciando a importação dos eventos históricos do Cloudtrail.")
