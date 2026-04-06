@@ -23,8 +23,9 @@ AWS_IAM_GROUPS_POLICIES = 'data/iam_groups_policies/'
 AWS_IAM_GROUPS_POLICIES_INLINE = 'data/iam_groups_policies_inline/'
 AWS_IAM_POLICIES_VERSION = 'data/iam_policies_version/'
 AWS_IAM_USERS_POLICIES_INLINE = 'data/iam_users_policies_inline/'
+AWS_IAM_ATTACHED_USER_POLICIES = 'data/iam_attached_user_policies/'
 
-AWS_EMR_CLUSTERS_CREATED_AFTER = date(2026,3,1)
+AWS_EMR_CLUSTERS_CREATED_AFTER = date(2026,2,5)
 AWS_EMR_CLUSTERS_QTD_DIAS_CONSULTA = 60
 AWS_EMR_CLUSTERS = 'data/emr_clusters/'
 AWS_EMR_STEPS = 'data/emr_steps/'

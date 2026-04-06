@@ -112,3 +112,18 @@ class ExtractIamPolicies:
                     'PolicyDocument':response['PolicyDocument']
                 })
         return docs
+    
+    def query_attached_user_policies(self, user_names):
+        policies=[]
+        paginator = IAM.get_paginator('list_attached_user_policies')
+        for user_name in user_names:
+            # Cria um iterador para as páginas
+            page_iterator = paginator.paginate(UserName=user_name)
+            for page in page_iterator:
+                for policy in page['AttachedPolicies']:
+                    policies.append({
+                        'UserName':user_name,
+                        'PolicyName':policy['PolicyName'],
+                        'PolicyArn':policy['PolicyArn']
+                    })
+        return policies

@@ -15,6 +15,7 @@ from src import (
     AWS_IAM_POLICIES_VERSION,
     AWS_IAM_GROUPS_POLICIES_INLINE,
     AWS_IAM_USERS_POLICIES_INLINE,
+    AWS_IAM_ATTACHED_USER_POLICIES,
     ExtractEmrClustersMetrics,
     AWS_EMR_CLUSTERS,
     AWS_EMR_STEPS,
@@ -212,6 +213,18 @@ def import_user_policies_inline():
     data = aws.query_user_policies_inline(user_names)
     save_json_files(data, AWS_IAM_USERS_POLICIES_INLINE, "user_policy_inline")
 
+def import_attached_user_policies():
+    if os.path.exists(AWS_IAM_ATTACHED_USER_POLICIES):
+        print(f'A pasta "{AWS_IAM_ATTACHED_USER_POLICIES}" já existe na pasta de dados.')
+        return
+
+    print("Iniciando a importação das políticas ANEXADAS aos usuários do IAM.")
+    aws = ExtractIamPolicies()
+    user_names = read_json_files(AWS_IAM_ALL_USERS, 'UserName')
+    data = aws.query_attached_user_policies(user_names)
+
+    save_json_files(data, AWS_IAM_ATTACHED_USER_POLICIES, "attached_user_policies")
+
 def import_emr_clusters():
     print("Iniciando a importação das métricas dos clusters do EMR.")
     # Gerando as datas a partir do dado parametrizado.
@@ -330,6 +343,7 @@ def main():
         import_iam_policies_version()
         import_group_policies_inline()
         import_user_policies_inline()
+        import_attached_user_policies()
     elif args.emr:
         import_emr_clusters()
     elif args.athena:
@@ -338,6 +352,9 @@ def main():
         import_cloudtrail_athena_event_history()
     elif unknown:
         print(f"Argumento desconhecido {unknown}.")
+        parser.print_help()
+        return
+    elif args.test:
         parser.print_help()
         return
     else:

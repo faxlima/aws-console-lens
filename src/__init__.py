@@ -16,6 +16,7 @@ from .params import (
     AWS_IAM_POLICIES_VERSION,
     AWS_IAM_GROUPS_POLICIES_INLINE,
     AWS_IAM_USERS_POLICIES_INLINE,
+    AWS_IAM_ATTACHED_USER_POLICIES,
     AWS_EMR_CLUSTERS,
     AWS_EMR_STEPS,
     AWS_EMR_CLUSTERS_CREATED_AFTER,
@@ -30,6 +31,6 @@ from .params import (
 aws-console-lens: Ferramenta de auditoria e visibilidade AWS.
 """
 
-__version__ = "0.1.14"
+__version__ = "0.1.16"
 __author__ = "Francisco Alex Xavier de Lima"
 __email__ = "alex.xavier.lima@gmail.com"
