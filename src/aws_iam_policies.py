@@ -64,7 +64,9 @@ class ExtractIamPolicies:
             docs.append({
                 'PolicyArn': value['Arn'],
                 'DefaultVersionId': value['DefaultVersionId'],
-                'PolicyDocument': response['PolicyVersion']['Document']
+                'PolicyDocument': response['PolicyVersion']['Document'],
+                'IsDefaultVersion': response['PolicyVersion']['IsDefaultVersion'],
+                'CreateDate': response['PolicyVersion']['CreateDate'],
             })
 
         return docs
