@@ -25,7 +25,10 @@ from src import (
     AWS_ATHENA_LOGS,
     ExtractCloudTrailEventHistory,
     AWS_CLOUDTRAIL_HISTORY,
-    AWS_ATHENA_QTD_HORAS
+    AWS_ATHENA_QTD_HORAS,
+    ExtractCostReports,
+    AWS_COST_REPORTS,
+    AWS_COST_REPORTS_QTD_DAYS
 )
 
 def save_json_file(json_data, json_target_folder,json_file):
@@ -285,7 +288,47 @@ def import_cloudtrail_athena_event_history():
         save_json_file(item, AWS_CLOUDTRAIL_HISTORY, f"{index}_cloudtrail.json")
     print("Importação dos eventos históricos do Cloudtrail concluída.")
 
+def import_costs():
+    print("Relatorio de custos.")
+    aws = ExtractCostReports()
+    final_day = datetime.now().date()
+    initial_day = final_day - timedelta(days=AWS_COST_REPORTS_QTD_DAYS-1)
 
+    if AWS_COST_REPORTS_QTD_DAYS <= 0:
+        print(f"Quantidade de dias inválido: {AWS_COST_REPORTS_QTD_DAYS}. Precisa ser configurado pelo menos 1 dia a consultar.")
+        return
+    
+    while initial_day <= final_day:
+        file_name = f"[{initial_day.strftime("%Y%m%d")}]cost_report_ec2.json"
+        if os.path.exists(os.path.join(AWS_COST_REPORTS, file_name)):
+            print(f"O arquivo {file_name} existe e não será sobrescrito.")
+        else:
+            period = dict(
+                Start=initial_day.strftime("%Y-%m-%d"), 
+                End=(initial_day + timedelta(days=1)).strftime("%Y-%m-%d")
+            )
+
+            print(f"Baixando os Dados de Custo do EC2 para o dia {initial_day}")
+            data = aws.query_ec2_cost_with_resources(period)
+            
+            save_json_file(data, AWS_COST_REPORTS, file_name)
+        initial_day += timedelta(days=1)
+
+def import_my_cost_services():
+    final_day = datetime.now().date()
+    initial_day = final_day - timedelta(days=AWS_COST_REPORTS_QTD_DAYS-1)
+    
+    if AWS_COST_REPORTS_QTD_DAYS <= 0:
+        print(f"Quantidade de dias inválido: {AWS_COST_REPORTS_QTD_DAYS}. Precisa ser configurado pelo menos 1 dia a consultar.")
+        return
+    
+    period = dict(
+        Start=initial_day.strftime("%Y-%m-%d"), 
+        End=(initial_day + timedelta(days=1)).strftime("%Y-%m-%d")
+    )
+
+    data = (ExtractCostReports().print_my_services(period))
+    save_json_file(data, AWS_COST_REPORTS, "cost_report_my_services.json")
 
 def main():
     parser = argparse.ArgumentParser(
@@ -355,7 +398,8 @@ def main():
         parser.print_help()
         return
     elif args.test:
-        parser.print_help()
+        #import_my_cost_services()
+        import_costs()
         return
     else:
         parser.print_help()

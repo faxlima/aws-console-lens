@@ -3,6 +3,7 @@ from .aws_iam_policies import ExtractIamPolicies
 from .aws_emr_clusters import ExtractEmrClustersMetrics
 from .aws_athena_logs import ExtractAthenaLogs
 from .aws_cloudtrail_event_history import ExtractCloudTrailEventHistory
+from .aws_cost_explorer_reports import ExtractCostReports
 from .params import (
     CONFIG,
     REGION_NAME,
@@ -24,13 +25,15 @@ from .params import (
     AWS_ATHENA_LOGS,
     AWS_CLOUDTRAIL_HISTORY,
     AWS_CLOUDTRAIL_HISTORY_QTD_CONSULTA,
-    AWS_ATHENA_QTD_HORAS
+    AWS_ATHENA_QTD_HORAS,
+    AWS_COST_REPORTS,
+    AWS_COST_REPORTS_QTD_DAYS
 )
 
 """
 aws-console-lens: Ferramenta de auditoria e visibilidade AWS.
 """
 
-__version__ = "0.1.16"
+__version__ = "0.1.18"
 __author__ = "Francisco Alex Xavier de Lima"
 __email__ = "alex.xavier.lima@gmail.com"
