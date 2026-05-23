@@ -34,6 +34,6 @@ from .params import (
 aws-console-lens: Ferramenta de auditoria e visibilidade AWS.
 """
 
-__version__ = "0.1.18"
+__version__ = "0.1.19"
 __author__ = "Francisco Alex Xavier de Lima"
 __email__ = "alex.xavier.lima@gmail.com"

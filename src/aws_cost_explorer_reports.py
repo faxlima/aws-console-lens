@@ -27,7 +27,7 @@ class ExtractCostReports:
             result = EC.get_cost_and_usage_with_resources(
                 TimePeriod=period,
                 Granularity=grain,
-                Filter=[filter],
+                Filter=filter,
                 Metrics=["UNBLENDED_COST"],
                 GroupBy=[group]
             )
